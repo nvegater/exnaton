@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { LatestPost } from "exnaton/app/_components/post";
 import { api, HydrateClient } from "exnaton/trpc/server";
+import { Button } from "exnaton/components/ui/button";
 
 export default async function Home() {
   const hello = await api.post.hello({ text: "from tRPC" });
@@ -43,6 +44,7 @@ export default async function Home() {
             <p className="text-2xl text-white">
               {hello ? hello.greeting : "Loading tRPC query..."}
             </p>
+            <Button>I am a button</Button>
           </div>
 
           <LatestPost />
