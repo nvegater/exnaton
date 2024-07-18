@@ -11,7 +11,7 @@ type ImportedMeasurement = RouterOutputs["measurements"]["importData"]["latestMe
 export function SeedDB() {
   const [latestMeasurement] = api.measurements.getLatest.useSuspenseQuery();
 
-  const { mutateAsync: importData } = api.measurements.importData.useMutation();
+  const { mutateAsync: importData, isPending } = api.measurements.importData.useMutation();
   const [latestInsertedMeasurement, setLatestInsertedMeasurement] = useState<ImportedMeasurement | null>(null);
 
   // const utils = api.useUtils();
@@ -54,7 +54,12 @@ export function SeedDB() {
               }
               console.error(error);
             }
-          }}>Start import</Button>
+          }} disabled={isPending}>Start import</Button>
+          {
+            isPending ? (
+              <p>Importing...</p>
+            ) : null
+          }
         </div>
       )}
       {/* <form
