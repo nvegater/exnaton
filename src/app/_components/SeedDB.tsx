@@ -6,13 +6,16 @@ import { api, type RouterOutputs } from "exnaton/trpc/react";
 import { Button } from "exnaton/components/ui/button";
 import { TRPCError } from "@trpc/server";
 
-type ImportedMeasurement = RouterOutputs["measurements"]["importData"]["latestMeasurement"]
+type ImportedMeasurement =
+  RouterOutputs["measurements"]["importData"]["latestMeasurement"];
 
 export function SeedDB() {
   const [latestMeasurement] = api.measurements.getLatest.useSuspenseQuery();
 
-  const { mutateAsync: importData, isPending } = api.measurements.importData.useMutation();
-  const [latestInsertedMeasurement, setLatestInsertedMeasurement] = useState<ImportedMeasurement | null>(null);
+  const { mutateAsync: importData, isPending } =
+    api.measurements.importData.useMutation();
+  const [latestInsertedMeasurement, setLatestInsertedMeasurement] =
+    useState<ImportedMeasurement | null>(null);
 
   // const utils = api.useUtils();
   // const [name, setName] = useState("");
@@ -25,14 +28,12 @@ export function SeedDB() {
 
   return (
     <div className="w-full max-w-xs">
-      {
-        latestInsertedMeasurement ? (
-          <p className="truncate">
-            Your most recent measurement from:{" "}
-            {latestInsertedMeasurement.timestamp.toDateString()}
-          </p>
-        ) : null
-      }
+      {latestInsertedMeasurement ? (
+        <p className="truncate">
+          Your most recent measurement from:{" "}
+          {latestInsertedMeasurement.timestamp.toDateString()}
+        </p>
+      ) : null}
       {latestMeasurement ? (
         <p className="truncate">
           Your most recent measurement from:{" "}
@@ -41,25 +42,26 @@ export function SeedDB() {
       ) : (
         <div>
           <p>You have no Measurements yet. Import Data to DB to start</p>
-          <Button onClick={async () => {
-            try {
-              const result = await importData();
-              alert(`Imported ${result.insertedCount} measurements`);
-              setLatestInsertedMeasurement(result.latestMeasurement);
-            } catch (error) {
-              if (error instanceof TRPCError) {
-                alert(error.message);
-              } else {
-                alert('An error occurred importing Data');
+          <Button
+            onClick={async () => {
+              try {
+                const result = await importData();
+                alert(`Imported ${result.insertedCount} measurements`);
+                setLatestInsertedMeasurement(result.latestMeasurement);
+              } catch (error) {
+                if (error instanceof TRPCError) {
+                  alert(error.message);
+                } else {
+                  alert("An error occurred importing Data");
+                }
+                console.error(error);
               }
-              console.error(error);
-            }
-          }} disabled={isPending}>Start import</Button>
-          {
-            isPending ? (
-              <p>Importing...</p>
-            ) : null
-          }
+            }}
+            disabled={isPending}
+          >
+            Start import
+          </Button>
+          {isPending ? <p>Importing...</p> : null}
         </div>
       )}
       {/* <form
