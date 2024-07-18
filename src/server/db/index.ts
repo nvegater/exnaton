@@ -1,18 +1,13 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-
-import { env } from "exnaton/env";
 import * as schema from "./schema";
 
-/**
- * Cache the database connection in development. This avoids creating a new connection on every HMR
- * update.
- */
-const globalForDb = globalThis as unknown as {
-  conn: postgres.Sql | undefined;
-};
+import { sql } from "@vercel/postgres";
+import { drizzle } from "drizzle-orm/vercel-postgres";
+import { env } from "../../env.js";
 
-const conn = globalForDb.conn ?? postgres(env.DATABASE_URL);
-if (env.NODE_ENV !== "production") globalForDb.conn = conn;
+export type SchemaType = typeof schema;
 
-export const db = drizzle(conn, { schema });
+// Connect to Vercel Postgres
+export const db = drizzle<SchemaType>(sql, {
+  schema,
+  logger: env.NODE_ENV === "development",
+});

@@ -38,12 +38,11 @@ export const posts = createTable(
 
 export const energyMeasurements = createTable("energy_measurement", {
   id: serial("id").primaryKey(),
-  measurement: varchar("measurement", { length: 256 }).notNull(), // Corresponds to "measurement" in the JSON
   timestamp: timestamp("timestamp", { withTimezone: true }).notNull(), // Corresponds to "timestamp" in the JSON
   muid: varchar("muid", { length: 256 }).notNull(), // Corresponds to "tags.muid" in the JSON
-  quality: varchar("quality", { length: 256 }).notNull(), // Corresponds to "tags.quality" in the JSON
+  meterAddress: varchar("meter_address", { length: 256 }).notNull(), // The key for the measurement value (e.g., "0100011D00FF") in the JSON
   value: numeric("value").notNull(), // Corresponds to the measurement value (e.g., "0100011D00FF") in the JSON
-  hexKey: varchar("hex_key", { length: 256 }).notNull(), // The key for the measurement value (e.g., "0100011D00FF") in the JSON
+  // default fields
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
