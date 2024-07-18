@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { api } from "exnaton/trpc/react";
 
-export function LatestPost() {
+export function SeedDB() {
   const [latestPost] = api.post.getLatest.useSuspenseQuery();
 
   const utils = api.useUtils();
