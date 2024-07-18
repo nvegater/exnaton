@@ -50,3 +50,5 @@ export const energyMeasurements = createTable("energy_measurement", {
     () => new Date(),
   ),
 });
+
+export type InsertMeasurement = typeof energyMeasurements.$inferInsert

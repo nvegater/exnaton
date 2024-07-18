@@ -1,4 +1,4 @@
-import { postRouter } from "exnaton/server/api/routers/post";
+import { measurementsRouter } from "exnaton/server/api/routers/post";
 import { createCallerFactory, createTRPCRouter } from "exnaton/server/api/trpc";
 
 /**
@@ -7,7 +7,7 @@ import { createCallerFactory, createTRPCRouter } from "exnaton/server/api/trpc";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  post: postRouter,
+  measurements: measurementsRouter,
 });
 
 // export type definition of API
