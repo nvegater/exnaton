@@ -8,7 +8,7 @@ import {
   serial,
   timestamp,
   varchar,
-  numeric,
+  doublePrecision,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -41,7 +41,7 @@ export const energyMeasurements = createTable("energy_measurement", {
   timestamp: timestamp("timestamp", { withTimezone: true }).notNull(), // Corresponds to "timestamp" in the JSON
   muid: varchar("muid", { length: 256 }).notNull(), // Corresponds to "tags.muid" in the JSON
   meterAddress: varchar("meter_address", { length: 256 }).notNull(), // The key for the measurement value (e.g., "0100011D00FF") in the JSON
-  value: numeric("value").notNull(), // Corresponds to the measurement value (e.g., "0100011D00FF") in the JSON
+  value: doublePrecision("value").notNull(), // Corresponds to the measurement value (e.g., "0100011D00FF") in the JSON
   // default fields
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
@@ -51,4 +51,4 @@ export const energyMeasurements = createTable("energy_measurement", {
   ),
 });
 
-export type InsertMeasurement = typeof energyMeasurements.$inferInsert
+export type InsertMeasurement = typeof energyMeasurements.$inferInsert;

@@ -28,11 +28,11 @@ const mapMeasurementsToInsertParams = (
       measurement["0100011D00FF"] !== undefined
         ? "0100011D00FF"
         : "0100021D00FF";
-    const valueAsString = measurement[meterAddress as keyof RawMeasurement];
-    if (typeof valueAsString !== "string")
+    const valueAsString = measurement[meterAddress];
+    if (valueAsString === undefined)
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Value is not a number",
+        message: `Value is not a number: ${valueAsString}`,
       });
 
     return {
@@ -69,6 +69,7 @@ const fetchJsonDataAndParse = async (): Promise<RawMeasurement[]> => {
         message: "Invalid data structure in response",
       });
     }
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     rawData?.data?.forEach((data: unknown) => {
       const parsed = rawMeasurementSchema.parse(data);

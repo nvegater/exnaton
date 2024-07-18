@@ -10,7 +10,6 @@ type ImportedMeasurement =
   RouterOutputs["measurements"]["importData"]["latestMeasurement"];
 
 export function SeedDB() {
-  const [latestMeasurement] = api.measurements.getLatest.useSuspenseQuery();
 
   const { mutateAsync: importData, isPending } =
     api.measurements.importData.useMutation();
@@ -34,12 +33,7 @@ export function SeedDB() {
           {latestInsertedMeasurement.timestamp.toDateString()}
         </p>
       ) : null}
-      {latestMeasurement ? (
-        <p className="truncate">
-          Your most recent measurement from:{" "}
-          {latestMeasurement.timestamp.toDateString()}
-        </p>
-      ) : (
+      {(
         <div>
           <p>You have no Measurements yet. Import Data to DB to start</p>
           <Button

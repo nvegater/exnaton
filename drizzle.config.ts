@@ -2,6 +2,8 @@ import { type Config } from "drizzle-kit";
 
 import { env } from "exnaton/env";
 
+console.log(env.POSTGRES_URL);
+
 export default {
   schema: "./src/server/db/schema.ts",
   dialect: "postgresql",

@@ -1,0 +1,1 @@
+ALTER TABLE "exnaton_energy_measurement" ALTER COLUMN "value" SET DATA TYPE double precision;
