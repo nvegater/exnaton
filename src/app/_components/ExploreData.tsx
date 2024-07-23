@@ -27,9 +27,7 @@ interface Measurement {
   value: number;
 }
 
-interface GroupedData {
-  [muid: string]: Measurement[];
-}
+type GroupedData = Record<string, Measurement[]>;
 
 interface MuidData {
   muid: string;
@@ -58,14 +56,15 @@ export const ExploreData = () => {
     },
   );
 
-  const measurements = data?.pages.flatMap((page) => page.chartData) ?? [];
-
   const muidData = useMemo<MuidData[]>(() => {
-    const groupedData = measurements.reduce<GroupedData>((acc, measurement) => {
+    const groupedData = (
+      data?.pages.flatMap((page) => page.chartData) ?? []
+    ).reduce<GroupedData>((acc, measurement) => {
       if (!acc[measurement.muid]) {
         acc[measurement.muid] = [];
       }
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       acc[measurement.muid].push(measurement);
       return acc;
     }, {});
@@ -78,7 +77,7 @@ export const ExploreData = () => {
         ),
       }),
     );
-  }, [measurements]);
+  }, [data]);
 
   const loadMore = async () => {
     if (hasNextPage) {
@@ -95,7 +94,7 @@ export const ExploreData = () => {
 
   const toggleAverage = () => {
     setShowAverage((prev) => !prev);
-    refetch();
+    void refetch();
   };
 
   if (status === "pending") return <div>Loading...</div>;
