@@ -52,3 +52,5 @@ export const energyMeasurements = createTable("energy_measurement", {
 });
 
 export type InsertMeasurement = typeof energyMeasurements.$inferInsert;
+
+export type TimeStampType = typeof energyMeasurements.$inferSelect["timestamp"];
