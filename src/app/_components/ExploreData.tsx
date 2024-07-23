@@ -1,112 +1,181 @@
 "use client";
 
-import {useState} from "react";
-import {api} from "exnaton/trpc/react";
+import { useState, useMemo } from "react";
+import { api } from "exnaton/trpc/react";
 import {
-    CartesianGrid,
-    Legend,
-    Line,
-    LineChart,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
-import {format, parseISO} from "date-fns";
+import { format } from "date-fns";
 
 type Intervals = "hourly" | "daily" | "weekly" | "monthly";
 
+const MUID_COLORS = {
+  "95ce3367-cbce-4a4d-bbe3-da082831d7bd": "#8884d8",
+  "1db7649e-9342-4e04-97c7-f0ebb88ed1f8": "#82ca9d",
+};
+
+interface Measurement {
+  muid: string;
+  time: string;
+  value: number;
+}
+
+interface GroupedData {
+  [muid: string]: Measurement[];
+}
+
+interface MuidData {
+  muid: string;
+  data: Measurement[];
+}
+
 export const ExploreData = () => {
-    const [selectedInterval, setSelectedInterval] = useState<Intervals>("hourly");
+  const [selectedInterval, setSelectedInterval] = useState<Intervals>("hourly");
+  const [showAverage, setShowAverage] = useState(false);
 
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, status} =
-        api.measurements.getAllMeasurements.useInfiniteQuery(
-            {
-                limit: 50,
-                interval: selectedInterval,
-                withAverage: false,
-            },
-            {
-                getNextPageParam: (lastPage) => lastPage.nextCursor,
-            },
-        );
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    refetch,
+  } = api.measurements.getAllMeasurements.useInfiniteQuery(
+    {
+      limit: 50,
+      interval: selectedInterval,
+      withAverage: showAverage,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    },
+  );
 
-    const measurements = data?.pages.flatMap((page) => page.chartData) ?? [];
+  const measurements = data?.pages.flatMap((page) => page.chartData) ?? [];
 
-    const loadMore = async () => {
-        if (hasNextPage) {
-            await fetchNextPage();
-        }
-    };
+  const muidData = useMemo<MuidData[]>(() => {
+    const groupedData = measurements.reduce<GroupedData>((acc, measurement) => {
+      if (!acc[measurement.muid]) {
+        acc[measurement.muid] = [];
+      }
+      // @ts-ignore
+      acc[measurement.muid].push(measurement);
+      return acc;
+    }, {});
 
-    // Custom date formatter
-    const formatDate = (d: Date) => {
-        const dateString = format(d, "MMM d");
-        const timeString = format(d, "HH:mm");
-        return `${timeString} (${dateString})`;
-    };
-
-
-    if (status === "pending") return <div>Loading...</div>;
-    if (status === "error") return <div>An error occurred</div>;
-
-    return (
-        <div>
-            <h2>Data Exploration</h2>
-            <select
-                value={selectedInterval}
-                onChange={(e) => {
-                    if (e.target.value) return;
-                    setSelectedInterval(e.target.value as Intervals);
-                }}
-            >
-                <option value="hourly">Hourly</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-            </select>
-            <div style={{width: "1200px", height: 800}}>
-                <ResponsiveContainer>
-                    <LineChart
-                        data={measurements}
-                        margin={{top: 5, right: 30, left: 20, bottom: 5}}
-                    >
-                        <CartesianGrid strokeDasharray="3 3"/>
-                        <XAxis
-                            dataKey="time"
-                            tickFormatter={(time: Date) => {
-                                return format(time, "HH:mm")
-                            }}
-                        />
-                        <YAxis/>
-                        <Tooltip
-                            labelFormatter={(label: string) => formatDate(new Date(label))}
-                            formatter={(value: number) => [value.toFixed(4), "Value"]}
-                        />
-                        <Legend/>
-                        <Line
-                            type="monotone"
-                            dataKey="value"
-                            stroke="#8884d8"
-                            dot={false}
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
-            </div>
-            <div>
-                {measurements.map((measurement) => (
-                    <div key={measurement.time}>
-                        <h3>{measurement.time}</h3>
-                        <p>MUID: {measurement.muid}</p>
-                        <p>Value: {measurement.value.toFixed(8)}</p>
-                    </div>
-                ))}
-            </div>
-            {hasNextPage && (
-                <button onClick={loadMore} disabled={isFetchingNextPage}>
-                    {isFetchingNextPage ? "Loading more..." : "Load More"}
-                </button>
-            )}
-        </div>
+    return Object.entries(groupedData).map(
+      ([muid, data]): MuidData => ({
+        muid,
+        data: data.sort(
+          (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
+        ),
+      }),
     );
+  }, [measurements]);
+
+  const loadMore = async () => {
+    if (hasNextPage) {
+      await fetchNextPage();
+    }
+  };
+
+  // Custom date formatter
+  const formatDate = (d: Date) => {
+    const dateString = format(d, "MMM d");
+    const timeString = format(d, "HH:mm");
+    return `${timeString} (${dateString})`;
+  };
+
+  const toggleAverage = () => {
+    setShowAverage((prev) => !prev);
+    refetch();
+  };
+
+  if (status === "pending") return <div>Loading...</div>;
+  if (status === "error") return <div>An error occurred</div>;
+
+  return (
+    <div>
+      <h2>Data Exploration</h2>
+      <select
+        value={selectedInterval}
+        onChange={(e) => setSelectedInterval(e.target.value as Intervals)}
+      >
+        <option value="hourly">Hourly</option>
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+      <label>
+        <input type="checkbox" checked={showAverage} onChange={toggleAverage} />
+        Show Average
+      </label>
+      {muidData.map(({ muid, data }) => (
+        <div key={muid} style={{ marginBottom: "40px" }}>
+          <h3>MUID: {muid}</h3>
+          <div style={{ width: "1200px", height: 400 }}>
+            <ResponsiveContainer>
+              <LineChart
+                data={data}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="time"
+                  tickFormatter={(time: string) =>
+                    format(new Date(time), "HH:mm")
+                  }
+                />
+                <YAxis domain={["auto", "auto"]} />
+                <Tooltip
+                  labelFormatter={(label: string) =>
+                    formatDate(new Date(label))
+                  }
+                  formatter={(value: number) => [value.toFixed(4), "Value"]}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  name={muid.slice(0, 8)}
+                  stroke={MUID_COLORS[muid as keyof typeof MUID_COLORS]}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((measurement) => (
+                  <tr key={measurement.time}>
+                    <td>{formatDate(new Date(measurement.time))}</td>
+                    <td>{measurement.value.toFixed(8)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+      {hasNextPage && (
+        <button onClick={loadMore} disabled={isFetchingNextPage}>
+          {isFetchingNextPage ? "Loading more..." : "Load More"}
+        </button>
+      )}
+    </div>
+  );
 };
