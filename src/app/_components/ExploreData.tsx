@@ -124,134 +124,151 @@ export const ExploreData = () => {
 
   return (
     <div>
-      <Select value={selectedMuid} onValueChange={setSelectedMuid}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select MUID" />
-        </SelectTrigger>
-        <SelectContent>
-          {MUID_OPTIONS.map((muid) => (
-            <SelectItem key={muid} value={muid}>
-              {muid.slice(0, 8)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div id="filters-container" className="flex justify-center items-center">
+        <Select value={selectedMuid} onValueChange={setSelectedMuid}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select MUID" />
+          </SelectTrigger>
+          <SelectContent>
+            {MUID_OPTIONS.map((muid) => (
+              <SelectItem key={muid} value={muid}>
+                {muid.slice(0, 8)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select
-        value={timeStep.toString()}
-        onValueChange={(value) => setTimeStep(Number(value))}
-      >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select Time Step" />
-        </SelectTrigger>
-        <SelectContent>
-          {TIME_STEP_OPTIONS.map((step) => (
-            <SelectItem key={step} value={step.toString()}>
-              {step} minutes
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {hasNextPage && (
-        <Button onClick={loadMore} disabled={isFetchingNextPage}>
-          {isFetchingNextPage ? "Loading more..." : "Load More"}
-        </Button>
-      )}
-      <Popover>
-        <PopoverTrigger>
-          <Button variant="outline">
-            {startDate ? format(startDate, "PPP") : "Start Date"}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={startDate}
-            onSelect={setStartDate}
-            initialFocus
-            disabled={(date) => date < minDate! || date > maxDate!}
-            defaultMonth={minDate}
-          />
-        </PopoverContent>
-      </Popover>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline">
-            {endDate ? format(endDate, "PPP") : "End Date"}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={endDate}
-            onSelect={setEndDate}
-            initialFocus
-            disabled={(date) => date < minDate! || date > maxDate!}
-            defaultMonth={maxDate}
-          />
-        </PopoverContent>
-      </Popover>
-
-      {muidData.map(({ muid, data }, index) => (
-        <div
-          key={`mui-${index}`}
-          style={{ marginBottom: "40px", minHeight: 800 }}
+        <Select
+          value={timeStep.toString()}
+          onValueChange={(value) => setTimeStep(Number(value))}
         >
-          <h3>MUID: {muid}</h3>
-          <div style={{ width: "1200px", height: 400 }}>
-            <ResponsiveContainer>
-              <LineChart
-                data={data}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="time"
-                  tickFormatter={(time: string) =>
-                    format(new Date(time), "HH:mm")
-                  }
-                />
-                <YAxis domain={["auto", "auto"]} />
-                <Tooltip
-                  labelFormatter={(label: string) =>
-                    formatDate(new Date(label))
-                  }
-                  formatter={(value: number) => [value.toFixed(4), "Value"]}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  name={muid.slice(0, 8)}
-                  stroke={MUID_COLORS[muid as keyof typeof MUID_COLORS]}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Time Step" />
+          </SelectTrigger>
+          <SelectContent>
+            {TIME_STEP_OPTIONS.map((step) => (
+              <SelectItem key={step} value={step.toString()}>
+                {step} minutes
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button
+          onClick={loadMore}
+          disabled={isFetchingNextPage || !hasNextPage}
+        >
+          {!hasNextPage
+            ? "No more data"
+            : isFetchingNextPage
+              ? "Loading more..."
+              : "Load More"}
+        </Button>
+        <Popover>
+          <PopoverTrigger>
+            <Button variant="outline">
+              {startDate ? format(startDate, "PPP") : "Start Date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={startDate}
+              onSelect={setStartDate}
+              initialFocus
+              disabled={(date) => date < minDate! || date > maxDate!}
+              defaultMonth={minDate}
+            />
+          </PopoverContent>
+        </Popover>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline">
+              {endDate ? format(endDate, "PPP") : "End Date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={endDate}
+              onSelect={setEndDate}
+              initialFocus
+              disabled={(date) => date < minDate! || date > maxDate!}
+              defaultMonth={maxDate}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div
+        id="charts-container"
+        className="flex justify-center items-center min-h-[1000px]"
+      >
+        {muidData.map(({ muid, data }, index) => (
           <div
-            style={{ maxHeight: "200px", overflowY: "scroll", height: "800px" }}
+            key={`mui-${index}`}
+            style={{ marginBottom: "40px", minHeight: 800 }}
           >
-            <table>
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((measurement, index) => (
-                  <tr key={index}>
-                    <td>{formatDate(new Date(measurement.time))}</td>
-                    <td>{measurement.value.toFixed(8)}</td>
+            <h3>MUID: {muid}</h3>
+            <div style={{ width: "1200px", height: 400 }}>
+              <ResponsiveContainer>
+                <LineChart
+                  data={data}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="time"
+                    tickFormatter={(time: string) =>
+                      format(new Date(time), "HH:mm")
+                    }
+                  />
+                  <YAxis domain={["auto", "auto"]} />
+                  <Tooltip
+                    labelFormatter={(label: string) =>
+                      formatDate(new Date(label))
+                    }
+                    formatter={(value: number) => [value.toFixed(4), "Value"]}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name={muid.slice(0, 8)}
+                    stroke={MUID_COLORS[muid as keyof typeof MUID_COLORS]}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div
+              style={{
+                overflowY: "scroll",
+                minHeight: "800px",
+                maxHeight: "900px",
+                width: "1200px",
+              }}
+            >
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Value</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.map((measurement, index) => (
+                    <tr key={index}>
+                      <td>{formatDate(new Date(measurement.time))}</td>
+                      <td>{measurement.value.toFixed(8)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
