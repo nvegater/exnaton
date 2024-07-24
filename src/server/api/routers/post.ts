@@ -73,6 +73,7 @@ const fetchJsonDataAndParse = async (): Promise<RawMeasurement[]> => {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     rawData?.data?.forEach((data: unknown) => {
+      // If the data has other shape we would throw an error here.
       const parsed = rawMeasurementSchema.parse(data);
       rawMeasurements.push(parsed);
     });
@@ -160,14 +161,6 @@ export const measurementsRouter = createTRPCRouter({
         nextCursor,
       };
     }),
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
   importData: publicProcedure.mutation(async ({ ctx }) => {
     const measurement = await ctx.db.query.energyMeasurements.findFirst();
     if (measurement)
@@ -175,7 +168,6 @@ export const measurementsRouter = createTRPCRouter({
         code: "INTERNAL_SERVER_ERROR",
         message: "Data already imported",
       });
-
     const rawMeasurements = await fetchJsonDataAndParse();
     const insertParams = mapMeasurementsToInsertParams(rawMeasurements);
 

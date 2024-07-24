@@ -1,13 +1,8 @@
 "use client";
 
-import { useState } from "react";
-
 import { api, type RouterOutputs } from "exnaton/trpc/react";
 import { Button } from "exnaton/components/ui/button";
 import { TRPCError } from "@trpc/server";
-
-type ImportedMeasurement =
-  RouterOutputs["measurements"]["importData"]["latestMeasurement"];
 
 export function SeedDB() {
   const { mutateAsync: importData, isPending } =
@@ -19,8 +14,8 @@ export function SeedDB() {
   return (
     <div className="w-full max-w-xs">
       {latestMeasurement ? (
-        <p >
-          Measurements are available, latest: <br/>
+        <p>
+          Measurements are available, latest: <br />
           {latestMeasurement.timestamp.toISOString()}
         </p>
       ) : (
