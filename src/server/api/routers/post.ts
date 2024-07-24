@@ -4,7 +4,6 @@ import { createTRPCRouter, publicProcedure } from "exnaton/server/api/trpc";
 import {
   energyMeasurements,
   type InsertMeasurement,
-  posts,
 } from "exnaton/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, eq, gt, gte, lte, sql } from "drizzle-orm";
