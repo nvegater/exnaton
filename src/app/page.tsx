@@ -101,25 +101,25 @@ export default async function Home() {
             The backend implements a data retrieval and storage system using
             tRPC. The <code>importData</code> procedure in the{" "}
             <code>measurementsRouter</code> handles this task:
-            <ul className="list-disc pl-5 mt-2">
-              <li>
-                It fetches data from two predefined URLs using the{" "}
-                <code>fetchJsonDataAndParse</code> function.
-              </li>
-              <li>
-                The retrieved data is parsed and validated using Zod schemas,
-                ensuring data integrity.
-              </li>
-              <li>
-                Parsed measurements are then mapped to a format suitable for
-                database insertion.
-              </li>
-              <li>
-                The data is stored in the database using the{" "}
-                <code>energyMeasurements</code> table schema.
-              </li>
-            </ul>
           </p>
+          <ul className="list-disc pl-5 mt-2">
+            <li>
+              It fetches data from two predefined URLs using the{" "}
+              <code>fetchJsonDataAndParse</code> function.
+            </li>
+            <li>
+              The retrieved data is parsed and validated using Zod schemas,
+              ensuring data integrity.
+            </li>
+            <li>
+              Parsed measurements are then mapped to a format suitable for
+              database insertion.
+            </li>
+            <li>
+              The data is stored in the database using the{" "}
+              <code>energyMeasurements</code> table schema.
+            </li>
+          </ul>
 
           <h3 className="text-xl font-semibold mt-4 mb-2">
             Task B2: Data Access Endpoint
@@ -127,38 +127,35 @@ export default async function Home() {
           <p className="mb-4">
             The backend provides a flexible endpoint for frontend data access
             through the <code>getAllMeasurements</code> procedure:
-            <ul className="list-disc pl-5 mt-2">
-              <li>
-                It supports pagination using a cursor-based approach, allowing
-                efficient data loading.
-              </li>
-              <li>
-                Query parameters include <code>limit</code>, <code>cursor</code>
-                , <code>startInterval</code>, and <code>endInterval</code>.
-              </li>
-              <li>
-                These parameters enable the frontend to request specific data
-                ranges and control the amount of data fetched.
-              </li>
-              <li>
-                The endpoint returns structured data including chart-ready
-                measurements and a next cursor for pagination.
-              </li>
-            </ul>
           </p>
-
-          <p className="mb-4">
-            Additional utility endpoints are provided:
-            <ul className="list-disc pl-5 mt-2">
-              <li>
-                <code>getTimeInterval</code>: Returns the min and max timestamps
-                in the dataset.
-              </li>
-              <li>
-                <code>getLatest</code>: Retrieves the most recent measurement.
-              </li>
-            </ul>
-          </p>
+          <ul className="list-disc pl-5 mt-2">
+            <li>
+              It supports pagination using a cursor-based approach, allowing
+              efficient data loading.
+            </li>
+            <li>
+              Query parameters include <code>limit</code>, <code>cursor</code>,{" "}
+              <code>startInterval</code>, and <code>endInterval</code>.
+            </li>
+            <li>
+              These parameters enable the frontend to request specific data
+              ranges and control the amount of data fetched.
+            </li>
+            <li>
+              The endpoint returns structured data including chart-ready
+              measurements and a next cursor for pagination.
+            </li>
+          </ul>
+          <p className="mb-4">Additional utility endpoints are provided:</p>
+          <ul className="list-disc pl-5 mt-2">
+            <li>
+              <code>getTimeInterval</code>: Returns the min and max timestamps
+              in the dataset.
+            </li>
+            <li>
+              <code>getLatest</code>: Retrieves the most recent measurement.
+            </li>
+          </ul>
 
           <p className="mb-4">
             By utilizing tRPC, the backend achieves type-safe API development,
@@ -184,23 +181,22 @@ export default async function Home() {
           <p className="mb-4">
             The application uses tRPC's React hooks to load data from the
             backend:
-            <ul className="list-disc pl-5 mt-2">
-              <li>
-                The <code>useInfiniteQuery</code> hook is used to fetch
-                paginated data from the <code>getAllMeasurements</code>{" "}
-                endpoint.
-              </li>
-              <li>
-                It supports dynamic loading of more data as the user scrolls or
-                requests it.
-              </li>
-              <li>
-                Date range selection is implemented using the{" "}
-                <code>startInterval</code> and <code>endInterval</code>{" "}
-                parameters.
-              </li>
-            </ul>
           </p>
+          <ul className="list-disc pl-5 mt-2">
+            <li>
+              The <code>useInfiniteQuery</code> hook is used to fetch paginated
+              data from the <code>getAllMeasurements</code> endpoint.
+            </li>
+            <li>
+              It supports dynamic loading of more data as the user scrolls or
+              requests it.
+            </li>
+            <li>
+              Date range selection is implemented using the{" "}
+              <code>startInterval</code> and <code>endInterval</code>{" "}
+              parameters.
+            </li>
+          </ul>
 
           <h3 className="text-xl font-semibold mt-4 mb-2">
             Task C3: Data Visualization
@@ -208,25 +204,24 @@ export default async function Home() {
           <p className="mb-4">
             Time-series data visualization is achieved using the Recharts
             library:
-            <ul className="list-disc pl-5 mt-2">
-              <li>
-                A <code>LineChart</code> component is used to display
-                measurements over time for each MUID.
-              </li>
-              <li>
-                The chart includes features like tooltips, legends, and
-                responsive sizing.
-              </li>
-              <li>
-                Data is preprocessed and grouped by MUID for efficient
-                rendering.
-              </li>
-              <li>
-                A tabular view of the data is also provided for detailed
-                inspection.
-              </li>
-            </ul>
           </p>
+          <ul className="list-disc pl-5 mt-2">
+            <li>
+              A <code>LineChart</code> component is used to display measurements
+              over time for each MUID.
+            </li>
+            <li>
+              The chart includes features like tooltips, legends, and responsive
+              sizing.
+            </li>
+            <li>
+              Data is preprocessed and grouped by MUID for efficient rendering.
+            </li>
+            <li>
+              A tabular view of the data is also provided for detailed
+              inspection.
+            </li>
+          </ul>
           <p className="mb-4">
             The frontend improves user experience with interactive elements like
             date pickers for range selection and a "Load More" button for

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useId } from "react";
 import { api } from "exnaton/trpc/react";
 import {
   CartesianGrid,
@@ -20,13 +20,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "exnaton/components/ui/popover";
-
-type Intervals = "hourly" | "daily" | "weekly" | "monthly";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "exnaton/components/ui/select";
 
 const MUID_COLORS = {
   "95ce3367-cbce-4a4d-bbe3-da082831d7bd": "#8884d8",
   "1db7649e-9342-4e04-97c7-f0ebb88ed1f8": "#82ca9d",
 };
+
+const MUID_OPTIONS = Object.keys(MUID_COLORS);
 
 interface Measurement {
   muid: string;
@@ -42,14 +49,19 @@ interface MuidData {
 }
 
 export const ExploreData = () => {
+  const reactID = useId();
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [selectedMuid, setSelectedMuid] = useState<string>(
+    "95ce3367-cbce-4a4d-bbe3-da082831d7bd",
+  );
 
   const { data: timeInterval } = api.measurements.getTimeInterval.useQuery();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     api.measurements.getAllMeasurements.useInfiniteQuery(
       {
+        muiId: selectedMuid,
         limit: 50,
         startInterval: startDate,
         endInterval: endDate,
@@ -68,8 +80,8 @@ export const ExploreData = () => {
       const max = new Date(timeInterval.max);
       setMinDate(min);
       setMaxDate(max);
-      setStartDate(min); // Optionally set the start date to the min date
-      setEndDate(max); // Optionally set the end date to the max date
+      setStartDate(min);
+      setEndDate(max);
     }
   }, [timeInterval]);
 
@@ -102,7 +114,6 @@ export const ExploreData = () => {
     }
   };
 
-  // Custom date formatter
   const formatDate = (d: Date) => {
     const dateString = format(d, "MMM d");
     const timeString = format(d, "HH:mm");
@@ -112,8 +123,27 @@ export const ExploreData = () => {
   if (status === "pending") return <div>Loading...</div>;
   if (status === "error") return <div>An error occurred</div>;
 
+  console.log("Has next page?", hasNextPage);
+
   return (
     <div>
+      <Select value={selectedMuid} onValueChange={setSelectedMuid}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select MUID" />
+        </SelectTrigger>
+        <SelectContent>
+          {MUID_OPTIONS.map((muid) => (
+            <SelectItem key={muid} value={muid}>
+              {muid.slice(0, 8)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {hasNextPage && (
+        <Button onClick={loadMore} disabled={isFetchingNextPage}>
+          {isFetchingNextPage ? "Loading more..." : "Load More"}
+        </Button>
+      )}
       <Popover>
         <PopoverTrigger>
           <Button variant="outline">
@@ -148,8 +178,9 @@ export const ExploreData = () => {
           />
         </PopoverContent>
       </Popover>
-      {muidData.map(({ muid, data }) => (
-        <div key={muid} style={{ marginBottom: "40px" }}>
+
+      {muidData.map(({ muid, data }, index) => (
+        <div key={`mui-${index}`} style={{ marginBottom: "40px" }}>
           <h3>MUID: {muid}</h3>
           <div style={{ width: "1200px", height: 400 }}>
             <ResponsiveContainer>
@@ -191,8 +222,8 @@ export const ExploreData = () => {
                 </tr>
               </thead>
               <tbody>
-                {data.map((measurement) => (
-                  <tr key={measurement.time}>
+                {data.map((measurement, index) => (
+                  <tr key={index}>
                     <td>{formatDate(new Date(measurement.time))}</td>
                     <td>{measurement.value.toFixed(8)}</td>
                   </tr>
@@ -202,11 +233,6 @@ export const ExploreData = () => {
           </div>
         </div>
       ))}
-      {hasNextPage && (
-        <Button onClick={loadMore} disabled={isFetchingNextPage}>
-          {isFetchingNextPage ? "Loading more..." : "Load More"}
-        </Button>
-      )}
     </div>
   );
 };

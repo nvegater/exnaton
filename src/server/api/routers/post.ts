@@ -7,7 +7,7 @@ import {
   posts,
 } from "exnaton/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, asc, gt, gte, lte, sql } from "drizzle-orm";
+import { and, asc, eq, gt, gte, lte, sql } from "drizzle-orm";
 
 const rawMeasurementSchema = z.object({
   measurement: z.string(),
@@ -108,7 +108,7 @@ export const measurementsRouter = createTRPCRouter({
   getAllMeasurements: publicProcedure
     .input(
       z.object({
-        withAverage: z.boolean().default(false),
+        muiId: z.string(),
         limit: z.number().min(1).max(100).optional().default(50),
         cursor: z.number().optional(),
         startInterval: z.date().optional(),
@@ -116,7 +116,7 @@ export const measurementsRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { limit, cursor, startInterval, endInterval } = input;
+      const { limit, cursor, startInterval, endInterval, muiId } = input;
 
       const results = await ctx.db
         .select({
@@ -128,6 +128,7 @@ export const measurementsRouter = createTRPCRouter({
         .from(energyMeasurements)
         .where(
           and(
+            eq(energyMeasurements.muid, muiId),
             cursor ? gt(energyMeasurements.id, cursor) : undefined,
             startInterval
               ? gte(energyMeasurements.timestamp, startInterval)
