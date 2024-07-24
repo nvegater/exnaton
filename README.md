@@ -1,5 +1,12 @@
 # Create T3 App
 
+
+The frontend improves user experience with interactive elements like
+date pickers for range selection and a "Load More" button for
+pagination. It effectively visualizes the time-series data while
+providing tools for data exploration and analysis.
+
+
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
 
 ## What's next? How do I make an app with this?

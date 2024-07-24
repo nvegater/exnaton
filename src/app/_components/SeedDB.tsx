@@ -1,6 +1,6 @@
 "use client";
 
-import { api, type RouterOutputs } from "exnaton/trpc/react";
+import { api } from "exnaton/trpc/react";
 import { Button } from "exnaton/components/ui/button";
 import { TRPCError } from "@trpc/server";
 

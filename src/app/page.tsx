@@ -36,7 +36,9 @@ export default async function Home() {
             </h3>
             <ul className="list-disc pl-6 text-gray-700">
               <li>
-                All measurements are for "energy" with "measured" quality tag
+                {
+                  'All measurements are for "energy" with "measured" quality tag'
+                }
               </li>
               <li>2688 data points per meter</li>
               <li>15-minute interval timestamps</li>
@@ -179,7 +181,7 @@ export default async function Home() {
             Task C2: Data Loading
           </h3>
           <p className="mb-4">
-            The application uses tRPC's React hooks to load data from the
+            The application uses tRPC&apos;s React hooks to load data from the
             backend:
           </p>
           <ul className="list-disc pl-5 mt-2">
@@ -223,10 +225,10 @@ export default async function Home() {
             </li>
           </ul>
           <p className="mb-4">
-            The frontend improves user experience with interactive elements like
-            date pickers for range selection and a "Load More" button for
-            pagination. It effectively visualizes the time-series data while
-            providing tools for data exploration and analysis.
+            {"The frontend improves user experience with interactive elements like" +
+              'date pickers for range selection and a "Load More" button for' +
+              "pagination. It effectively visualizes the time-series data while" +
+              "providing tools for data exploration and analysis"}
           </p>
         </div>
 

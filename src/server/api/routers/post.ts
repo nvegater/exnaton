@@ -7,7 +7,7 @@ import {
   posts,
 } from "exnaton/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, asc, eq, gt, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gt, gte, lte, sql } from "drizzle-orm";
 
 const rawMeasurementSchema = z.object({
   measurement: z.string(),
