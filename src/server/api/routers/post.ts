@@ -108,12 +108,36 @@ export const measurementsRouter = createTRPCRouter({
   getAllMeasurements: publicProcedure
     .input(
       z.object({
-        muiId: z.string(),
-        limit: z.number().min(1).max(100).optional().default(50),
-        cursor: z.number().optional(),
-        startInterval: z.date().optional(),
-        endInterval: z.date().optional(),
-        timeStep: z.number().min(15).max(180).default(15), // New parameter for time step in minutes
+        muiId: z.string().describe("Meter Unique Identifier"),
+        limit: z
+          .number()
+          .min(1)
+          .max(100)
+          .optional()
+          .default(50)
+          .describe("Maximum number of results to return (1-100, default: 50)"),
+        cursor: z
+          .number()
+          .optional()
+          .describe(
+            "ID of the last item in the previous page, for pagination, for initial page leave empty",
+          ),
+        startInterval: z
+          .date()
+          .optional()
+          .describe("Start date/time for filtering measurements"),
+        endInterval: z
+          .date()
+          .optional()
+          .describe("End date/time for filtering measurements"),
+        timeStep: z
+          .number()
+          .min(15)
+          .max(180)
+          .default(15)
+          .describe(
+            "Time interval in minutes for grouping measurements (15-180, default: 15)",
+          ),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -219,17 +243,6 @@ export const measurementsRouter = createTRPCRouter({
 
     return { insertedValues, insertedCount, latestMeasurement };
   }),
-  create: publicProcedure
-    .input(z.object({ name: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      // simulate a slow db call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      await ctx.db.insert(posts).values({
-        name: input.name,
-      });
-    }),
-
   getLatest: publicProcedure.query(async ({ ctx }) => {
     const latestMeasurement = await ctx.db.query.energyMeasurements.findFirst({
       orderBy: (energyMeasurements, { desc }) => [
