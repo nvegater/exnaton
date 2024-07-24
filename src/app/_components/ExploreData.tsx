@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { api } from "exnaton/trpc/react";
 import {
   CartesianGrid,
@@ -42,10 +42,10 @@ interface MuidData {
 }
 
 export const ExploreData = () => {
-  const [selectedInterval, setSelectedInterval] = useState<Intervals>("hourly");
-
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+
+  const { data: timeInterval } = api.measurements.getTimeInterval.useQuery();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     api.measurements.getAllMeasurements.useInfiniteQuery(
@@ -58,6 +58,20 @@ export const ExploreData = () => {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
       },
     );
+
+  const [minDate, setMinDate] = useState<Date | undefined>(undefined);
+  const [maxDate, setMaxDate] = useState<Date | undefined>(undefined);
+
+  useEffect(() => {
+    if (timeInterval) {
+      const min = new Date(timeInterval.min);
+      const max = new Date(timeInterval.max);
+      setMinDate(min);
+      setMaxDate(max);
+      setStartDate(min); // Optionally set the start date to the min date
+      setEndDate(max); // Optionally set the end date to the max date
+    }
+  }, [timeInterval]);
 
   const muidData = useMemo<MuidData[]>(() => {
     const groupedData = (
@@ -100,18 +114,8 @@ export const ExploreData = () => {
 
   return (
     <div>
-      <h2>Data Exploration</h2>
-      <select
-        value={selectedInterval}
-        onChange={(e) => setSelectedInterval(e.target.value as Intervals)}
-      >
-        <option value="hourly">Hourly</option>
-        <option value="daily">Daily</option>
-        <option value="weekly">Weekly</option>
-        <option value="monthly">Monthly</option>
-      </select>
       <Popover>
-        <PopoverTrigger asChild>
+        <PopoverTrigger>
           <Button variant="outline">
             {startDate ? format(startDate, "PPP") : "Start Date"}
           </Button>
@@ -122,6 +126,8 @@ export const ExploreData = () => {
             selected={startDate}
             onSelect={setStartDate}
             initialFocus
+            disabled={(date) => date < minDate! || date > maxDate!}
+            defaultMonth={minDate}
           />
         </PopoverContent>
       </Popover>
@@ -137,6 +143,8 @@ export const ExploreData = () => {
             selected={endDate}
             onSelect={setEndDate}
             initialFocus
+            disabled={(date) => date < minDate! || date > maxDate!}
+            defaultMonth={maxDate}
           />
         </PopoverContent>
       </Popover>

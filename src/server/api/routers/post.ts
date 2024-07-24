@@ -82,6 +82,28 @@ const fetchJsonDataAndParse = async (): Promise<RawMeasurement[]> => {
 };
 
 export const measurementsRouter = createTRPCRouter({
+  getTimeInterval: publicProcedure.query(async ({ ctx }) => {
+    const result = await ctx.db
+      .select({
+        min: sql<string>`MIN(${energyMeasurements.timestamp})::text`,
+        max: sql<string>`MAX(${energyMeasurements.timestamp})::text`,
+      })
+      .from(energyMeasurements)
+      .execute();
+
+    const resultElement = result[0];
+    if (!result.length || !resultElement?.min || !resultElement?.max) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "No Time interval Found",
+      });
+    }
+
+    return {
+      min: new Date(resultElement.min).getTime(),
+      max: new Date(resultElement.max).getTime(),
+    };
+  }),
   getAllMeasurements: publicProcedure
     .input(
       z.object({
