@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useId } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { api } from "exnaton/trpc/react";
 import {
   CartesianGrid,
@@ -59,7 +59,7 @@ export const ExploreData = () => {
 
   const { data: timeInterval } = api.measurements.getTimeInterval.useQuery();
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     api.measurements.getAllMeasurements.useInfiniteQuery(
       {
         muiId: selectedMuid,
