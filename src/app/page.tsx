@@ -10,7 +10,7 @@ export default async function Home() {
         <h1 className="text-8xl my-8">Coding Challenge: Exnaton</h1>
         <h2 className="text-4xl my-4">Task A: Data exploration.</h2>
         <div className="p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold mb-4 text-blue-600">
+          <h2 className="text-2xl font-bold mb-4">
             Energy Measurement Data Analysis
           </h2>
 
