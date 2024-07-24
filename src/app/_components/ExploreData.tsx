@@ -34,6 +34,7 @@ const MUID_COLORS = {
 };
 
 const MUID_OPTIONS = Object.keys(MUID_COLORS);
+const TIME_STEP_OPTIONS = [15, 30, 45, 60, 75, 90, 120, 150, 180];
 
 interface Measurement {
   muid: string;
@@ -49,12 +50,12 @@ interface MuidData {
 }
 
 export const ExploreData = () => {
-  const reactID = useId();
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [selectedMuid, setSelectedMuid] = useState<string>(
     "95ce3367-cbce-4a4d-bbe3-da082831d7bd",
   );
+  const [timeStep, setTimeStep] = useState<number>(15);
 
   const { data: timeInterval } = api.measurements.getTimeInterval.useQuery();
 
@@ -65,6 +66,7 @@ export const ExploreData = () => {
         limit: 50,
         startInterval: startDate,
         endInterval: endDate,
+        timeStep: timeStep,
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -120,11 +122,6 @@ export const ExploreData = () => {
     return `${timeString} (${dateString})`;
   };
 
-  if (status === "pending") return <div>Loading...</div>;
-  if (status === "error") return <div>An error occurred</div>;
-
-  console.log("Has next page?", hasNextPage);
-
   return (
     <div>
       <Select value={selectedMuid} onValueChange={setSelectedMuid}>
@@ -139,6 +136,23 @@ export const ExploreData = () => {
           ))}
         </SelectContent>
       </Select>
+
+      <Select
+        value={timeStep.toString()}
+        onValueChange={(value) => setTimeStep(Number(value))}
+      >
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select Time Step" />
+        </SelectTrigger>
+        <SelectContent>
+          {TIME_STEP_OPTIONS.map((step) => (
+            <SelectItem key={step} value={step.toString()}>
+              {step} minutes
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
       {hasNextPage && (
         <Button onClick={loadMore} disabled={isFetchingNextPage}>
           {isFetchingNextPage ? "Loading more..." : "Load More"}
@@ -180,7 +194,10 @@ export const ExploreData = () => {
       </Popover>
 
       {muidData.map(({ muid, data }, index) => (
-        <div key={`mui-${index}`} style={{ marginBottom: "40px" }}>
+        <div
+          key={`mui-${index}`}
+          style={{ marginBottom: "40px", minHeight: 800 }}
+        >
           <h3>MUID: {muid}</h3>
           <div style={{ width: "1200px", height: 400 }}>
             <ResponsiveContainer>
@@ -213,7 +230,9 @@ export const ExploreData = () => {
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+          <div
+            style={{ maxHeight: "200px", overflowY: "scroll", height: "800px" }}
+          >
             <table>
               <thead>
                 <tr>

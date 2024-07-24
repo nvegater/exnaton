@@ -113,12 +113,13 @@ export const measurementsRouter = createTRPCRouter({
         cursor: z.number().optional(),
         startInterval: z.date().optional(),
         endInterval: z.date().optional(),
+        timeStep: z.number().min(15).max(180).default(15), // New parameter for time step in minutes
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { limit, cursor, startInterval, endInterval, muiId } = input;
-
-      const results = await ctx.db
+      const { limit, cursor, startInterval, endInterval, muiId, timeStep } =
+        input;
+      const query = ctx.db
         .select({
           id: energyMeasurements.id,
           timestamp: energyMeasurements.timestamp,
@@ -138,24 +139,55 @@ export const measurementsRouter = createTRPCRouter({
               : undefined,
           ),
         )
-        .orderBy(asc(energyMeasurements.timestamp), asc(energyMeasurements.id))
-        .limit(limit + 1);
+        .orderBy(energyMeasurements.timestamp, energyMeasurements.id);
 
-      let nextCursor: number | undefined = undefined;
-      if (results.length > limit) {
-        const nextItem = results.pop();
-        nextCursor = nextItem!.id;
-      }
+      const results = await query.execute();
 
-      const chartData = results
-        .map((m) => ({
-          time: m.timestamp.getTime(),
-          value: m.value,
-          muid: m.muid,
-        }))
-        .sort(
-          (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
+      const roundToNearestInterval = (date: Date, intervalMinutes: number) => {
+        const ms = 1000 * 60 * intervalMinutes;
+        return new Date(Math.round(date.getTime() / ms) * ms);
+      };
+
+      // Filter results based on timeStep
+      const filteredResults = results.reduce((acc: typeof results, curr) => {
+        const roundedTimestamp = roundToNearestInterval(
+          curr.timestamp,
+          timeStep,
         );
+        const existingIndex = acc.findIndex(
+          (item) => item.timestamp.getTime() === roundedTimestamp.getTime(),
+        );
+
+        if (existingIndex === -1) {
+          acc.push({ ...curr, timestamp: roundedTimestamp });
+        } else {
+          const resultElement = acc[existingIndex]!;
+          if (!resultElement)
+            throw new Error(
+              "Unexpected error rounding time, undefined element.. weird",
+            );
+          if (curr.timestamp.getTime() > resultElement.timestamp.getTime()) {
+            acc[existingIndex] = { ...curr, timestamp: roundedTimestamp };
+          }
+        }
+
+        return acc;
+      }, []);
+
+      // Store the ID of the last result before filtering
+      const lastResultId = results[results.length - 1]?.id;
+
+      // Apply limit
+      const limitedResults = filteredResults.slice(0, limit);
+
+      // Set nextCursor based on the original results, not the filtered ones
+      const nextCursor = results.length > limit ? lastResultId : undefined;
+
+      const chartData = limitedResults.map((m) => ({
+        time: m.timestamp.getTime(),
+        value: m.value,
+        muid: m.muid,
+      }));
 
       return {
         chartData,
