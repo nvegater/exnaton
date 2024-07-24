@@ -13,6 +13,13 @@ import {
   YAxis,
 } from "recharts";
 import { format } from "date-fns";
+import { Button } from "exnaton/components/ui/button";
+import { Calendar } from "exnaton/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "exnaton/components/ui/popover";
 
 type Intervals = "hourly" | "daily" | "weekly" | "monthly";
 
@@ -36,25 +43,21 @@ interface MuidData {
 
 export const ExploreData = () => {
   const [selectedInterval, setSelectedInterval] = useState<Intervals>("hourly");
-  const [showAverage, setShowAverage] = useState(false);
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-    refetch,
-  } = api.measurements.getAllMeasurements.useInfiniteQuery(
-    {
-      limit: 50,
-      interval: selectedInterval,
-      withAverage: showAverage,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-    },
-  );
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+    api.measurements.getAllMeasurements.useInfiniteQuery(
+      {
+        limit: 50,
+        startInterval: startDate,
+        endInterval: endDate,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      },
+    );
 
   const muidData = useMemo<MuidData[]>(() => {
     const groupedData = (
@@ -92,11 +95,6 @@ export const ExploreData = () => {
     return `${timeString} (${dateString})`;
   };
 
-  const toggleAverage = () => {
-    setShowAverage((prev) => !prev);
-    void refetch();
-  };
-
   if (status === "pending") return <div>Loading...</div>;
   if (status === "error") return <div>An error occurred</div>;
 
@@ -112,10 +110,36 @@ export const ExploreData = () => {
         <option value="weekly">Weekly</option>
         <option value="monthly">Monthly</option>
       </select>
-      <label>
-        <input type="checkbox" checked={showAverage} onChange={toggleAverage} />
-        Show Average
-      </label>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline">
+            {startDate ? format(startDate, "PPP") : "Start Date"}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={startDate}
+            onSelect={setStartDate}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline">
+            {endDate ? format(endDate, "PPP") : "End Date"}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={endDate}
+            onSelect={setEndDate}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
       {muidData.map(({ muid, data }) => (
         <div key={muid} style={{ marginBottom: "40px" }}>
           <h3>MUID: {muid}</h3>
@@ -171,9 +195,9 @@ export const ExploreData = () => {
         </div>
       ))}
       {hasNextPage && (
-        <button onClick={loadMore} disabled={isFetchingNextPage}>
+        <Button onClick={loadMore} disabled={isFetchingNextPage}>
           {isFetchingNextPage ? "Loading more..." : "Load More"}
-        </button>
+        </Button>
       )}
     </div>
   );
