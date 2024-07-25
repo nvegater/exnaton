@@ -13,7 +13,7 @@ import {
   YAxis,
 } from "recharts";
 import { format } from "date-fns";
-import { Button } from "exnaton/components/ui/button";
+import { Button, buttonVariants } from "exnaton/components/ui/button";
 import { Calendar } from "exnaton/components/ui/calendar";
 import {
   Popover,
@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "exnaton/components/ui/select";
+import { cn } from "exnaton/components/lib/utils";
 
 const MUID_COLORS = {
   "95ce3367-cbce-4a4d-bbe3-da082831d7bd": "#8884d8",
@@ -124,7 +125,7 @@ export const ExploreData = () => {
 
   return (
     <div>
-      <div id="filters-container" className="flex justify-center items-center">
+      <div id="filters-container" className="flex justify-evenly items-center">
         <Select value={selectedMuid} onValueChange={setSelectedMuid}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select MUID" />
@@ -153,22 +154,11 @@ export const ExploreData = () => {
             ))}
           </SelectContent>
         </Select>
-
-        <Button
-          onClick={loadMore}
-          disabled={isFetchingNextPage || !hasNextPage}
-        >
-          {!hasNextPage
-            ? "No more data"
-            : isFetchingNextPage
-              ? "Loading more..."
-              : "Load More"}
-        </Button>
         <Popover>
           <PopoverTrigger>
-            <Button variant="outline">
+            <div className={cn(buttonVariants({ variant: "outline" }))}>
               {startDate ? format(startDate, "PPP") : "Start Date"}
-            </Button>
+            </div>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
             <Calendar
@@ -183,9 +173,9 @@ export const ExploreData = () => {
         </Popover>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline">
+            <div className={cn(buttonVariants({ variant: "outline" }))}>
               {endDate ? format(endDate, "PPP") : "End Date"}
-            </Button>
+            </div>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
             <Calendar
@@ -241,12 +231,29 @@ export const ExploreData = () => {
                 </LineChart>
               </ResponsiveContainer>
             </div>
+            <div className="flex justify-center items-center">
+              <Button
+                onClick={loadMore}
+                disabled={isFetchingNextPage || !hasNextPage}
+                variant={isFetchingNextPage ? "secondary" : "default"}
+                size="lg"
+              >
+                {!hasNextPage
+                  ? "No more data"
+                  : isFetchingNextPage
+                    ? "Loading more..."
+                    : "Load More data"}
+              </Button>
+            </div>
             <div
               style={{
+                display: "flex",
+                justifyContent: "center",
                 overflowY: "scroll",
                 minHeight: "800px",
                 maxHeight: "900px",
                 width: "1200px",
+                marginTop: "40px",
               }}
             >
               <table>
