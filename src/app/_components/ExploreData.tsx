@@ -192,16 +192,13 @@ export const ExploreData = () => {
 
       <div
         id="charts-container"
-        className="flex justify-center items-center min-h-[1000px]"
+        className="flex flex-col items-center w-full px-4 sm:px-6 lg:px-8"
       >
         {muidData.map(({ muid, data }, index) => (
-          <div
-            key={`mui-${index}`}
-            style={{ marginBottom: "40px", minHeight: 800 }}
-          >
-            <h3>MUID: {muid}</h3>
-            <div style={{ width: "1200px", height: 400 }}>
-              <ResponsiveContainer>
+          <div key={`mui-${index}`} className="w-full max-w-7xl mb-10">
+            <h3 className="text-lg font-semibold mb-4">MUID: {muid}</h3>
+            <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px]">
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={data}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -231,7 +228,7 @@ export const ExploreData = () => {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center my-6">
               <Button
                 onClick={loadMore}
                 disabled={isFetchingNextPage || !hasNextPage}
@@ -245,29 +242,23 @@ export const ExploreData = () => {
                     : "Load More data"}
               </Button>
             </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                overflowY: "scroll",
-                minHeight: "800px",
-                maxHeight: "900px",
-                width: "1200px",
-                marginTop: "40px",
-              }}
-            >
-              <table>
+            <div className="w-full overflow-x-auto">
+              <table className="w-full min-w-[600px]">
                 <thead>
                   <tr>
-                    <th>Time</th>
-                    <th>Value</th>
+                    <th className="px-4 py-2 text-left">Time</th>
+                    <th className="px-4 py-2 text-left">Value</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.map((measurement, index) => (
-                    <tr key={index}>
-                      <td>{formatDate(new Date(measurement.time))}</td>
-                      <td>{measurement.value.toFixed(8)}</td>
+                    <tr key={index} className="border-t">
+                      <td className="px-4 py-2">
+                        {formatDate(new Date(measurement.time))}
+                      </td>
+                      <td className="px-4 py-2">
+                        {measurement.value.toFixed(8)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
