@@ -13,7 +13,7 @@ import {
   YAxis,
 } from "recharts";
 import { format } from "date-fns";
-import { Button } from "exnaton/components/ui/button";
+import { Button, buttonVariants } from "exnaton/components/ui/button";
 import { Calendar } from "exnaton/components/ui/calendar";
 import {
   Popover,
@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "exnaton/components/ui/select";
+import { cn } from "exnaton/components/lib/utils";
 
 const MUID_COLORS = {
   "95ce3367-cbce-4a4d-bbe3-da082831d7bd": "#8884d8",
@@ -124,7 +125,7 @@ export const ExploreData = () => {
 
   return (
     <div>
-      <div id="filters-container" className="flex justify-center items-center">
+      <div id="filters-container" className="flex justify-evenly items-center">
         <Select value={selectedMuid} onValueChange={setSelectedMuid}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select MUID" />
@@ -153,22 +154,11 @@ export const ExploreData = () => {
             ))}
           </SelectContent>
         </Select>
-
-        <Button
-          onClick={loadMore}
-          disabled={isFetchingNextPage || !hasNextPage}
-        >
-          {!hasNextPage
-            ? "No more data"
-            : isFetchingNextPage
-              ? "Loading more..."
-              : "Load More"}
-        </Button>
         <Popover>
           <PopoverTrigger>
-            <Button variant="outline">
+            <div className={cn(buttonVariants({ variant: "outline" }))}>
               {startDate ? format(startDate, "PPP") : "Start Date"}
-            </Button>
+            </div>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
             <Calendar
@@ -183,9 +173,9 @@ export const ExploreData = () => {
         </Popover>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline">
+            <div className={cn(buttonVariants({ variant: "outline" }))}>
               {endDate ? format(endDate, "PPP") : "End Date"}
-            </Button>
+            </div>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
             <Calendar
@@ -202,16 +192,13 @@ export const ExploreData = () => {
 
       <div
         id="charts-container"
-        className="flex justify-center items-center min-h-[1000px]"
+        className="flex flex-col items-center w-full px-4 sm:px-6 lg:px-8"
       >
         {muidData.map(({ muid, data }, index) => (
-          <div
-            key={`mui-${index}`}
-            style={{ marginBottom: "40px", minHeight: 800 }}
-          >
-            <h3>MUID: {muid}</h3>
-            <div style={{ width: "1200px", height: 400 }}>
-              <ResponsiveContainer>
+          <div key={`mui-${index}`} className="w-full max-w-7xl mb-10">
+            <h3 className="text-lg font-semibold mb-4">MUID: {muid}</h3>
+            <div className="w-full h-[300px] sm:h-[400px] lg:h-[500px]">
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={data}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -241,26 +228,37 @@ export const ExploreData = () => {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <div
-              style={{
-                overflowY: "scroll",
-                minHeight: "800px",
-                maxHeight: "900px",
-                width: "1200px",
-              }}
-            >
-              <table>
+            <div className="flex justify-center my-6">
+              <Button
+                onClick={loadMore}
+                disabled={isFetchingNextPage || !hasNextPage}
+                variant={isFetchingNextPage ? "secondary" : "default"}
+                size="lg"
+              >
+                {!hasNextPage
+                  ? "No more data"
+                  : isFetchingNextPage
+                    ? "Loading more..."
+                    : "Load More data"}
+              </Button>
+            </div>
+            <div className="w-full overflow-x-auto">
+              <table className="w-full min-w-[600px]">
                 <thead>
                   <tr>
-                    <th>Time</th>
-                    <th>Value</th>
+                    <th className="px-4 py-2 text-left">Time</th>
+                    <th className="px-4 py-2 text-left">Value</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.map((measurement, index) => (
-                    <tr key={index}>
-                      <td>{formatDate(new Date(measurement.time))}</td>
-                      <td>{measurement.value.toFixed(8)}</td>
+                    <tr key={index} className="border-t">
+                      <td className="px-4 py-2">
+                        {formatDate(new Date(measurement.time))}
+                      </td>
+                      <td className="px-4 py-2">
+                        {measurement.value.toFixed(8)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
